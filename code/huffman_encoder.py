@@ -64,16 +64,21 @@ class HuffmanEncoder(object):
         self.number = self.df[['number']]
         self.symbols = self.df.index.tolist()
         self.reduce_pro = self.reduce()
+        self.codding = self.encode()
+        self.source_entropy = self.entropy()
+        self.mean_length = self.mean_code_length()
+        self.encode_efficiency = self.encode_rate()
 
     def reduce(self):
         """缩减信源"""
-        df = self.df
+        df = self.df.copy()
         S = []
         while len(df.index) > 1:
             df, s = reduce_info_src(df)
             S.append(s)
         d = dict()
         for i in S:
+            # print(i)
             d = {**d, **i}
         return d
 
@@ -81,22 +86,47 @@ class HuffmanEncoder(object):
         """编码"""
         keys = []
         values = []
-        coding = {}
+        codding = {}
         for key, value in self.reduce_pro.items():
             keys.append(key)
             values.append(value)
-        for index, sym in enumerate(encoder.symbols):
+        for index, sym in enumerate(self.symbols):
             in_list = find_and_sort(sym, keys)
+            # print(f'{sym}:{in_list}')
             code = ''
-            for i in in_list[:-1]:
+            for i in in_list:
                 idx = keys.index(i)
                 code += values[idx]
-            coding[sym] = code
-        return coding
+            codding[sym] = code
+        keys = []
+        values = []
+        for key, value in codding.items():
+            keys.append(key)
+            values.append(value)
+        codding = pd.DataFrame(values, index=keys, columns=['code'])
+        return codding
+
+    def mean_code_length(self):
+        p = self.frequency.copy()
+        code = self.codding.copy()
+        df = pd.concat([p, code], axis=1)
+        df['l_i'] = df.apply(lambda x: x['frequency'] * len(x['code']), axis=1)
+        return df['l_i'].sum()
+
+    def entropy(self):
+        p = self.frequency.copy().values
+        for idx in range(len(p)):
+            if p[idx] != 0:
+                p[idx] = p[idx] * np.log2(p[idx])
+        return - p.sum()
+
+    def encode_rate(self):
+        return self.source_entropy / self.mean_length
 
 
 if __name__ == '__main__':
     encoder = HuffmanEncoder(filename='../data/GameOfThrones.txt')
-    codding = encoder.encode()
-    for key, value in codding.items():
-        print(f'{key}:{value}')
+    print(encoder.codding)
+    print(f'信源熵:{encoder.source_entropy:.2f}')
+    print(f'平均码长:{encoder.mean_length:.2f}')
+    print(f'编码效率:{encoder.encode_efficiency*100:.2f}%')
