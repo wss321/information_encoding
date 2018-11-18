@@ -1,17 +1,20 @@
 # information_encoding
 信源编码
 # 0.环境
-python>=3.6<br/>
-numpy<br/>
-pandas<br/>
+```
+python>=3.6
+numpy
+pandas
+```
 # 1. 数据
 data/GameOfThrones.txt<br/>
 # 2. 编码
-1. Huffman 编码 <br/>
-运行 code/huffman_encoder.py <br/>
-结果：<br/>
+## 1. Huffman 编码 <br/>
+```
+运行 code/huffman_encoder.py 
+```
 | 字符 | 码字 |
-|:-----:|:-----------------:|
+|:---:|:---------:|
 | 空格 | 00 |
 | e | 010 |
 | t | 1010 |
@@ -65,6 +68,8 @@ data/GameOfThrones.txt<br/>
 | Q | 10110001110001 |
 | X | 101100011100001 |
 | Z | 101100011100000 |
+```
 信源熵:4.22
 平均码长:4.26
 编码效率:99.03%
+```
