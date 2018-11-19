@@ -9,7 +9,7 @@ pandas
 # 1. 数据
 data/GameOfThrones.txt<br/>
 # 2. 编码
-## 1. Huffman 编码
+## (1). Huffman 编码
 ```
 运行 code/huffman_encoder.py 
 ```
@@ -73,7 +73,7 @@ data/GameOfThrones.txt<br/>
 编码效率:99.03%
 ```
 
-## 2. Shannon 编码
+## (2). Shannon 编码
 ```
 运行 code/shannon_encoder.py
 ```
