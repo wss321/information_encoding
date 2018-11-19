@@ -1,5 +1,10 @@
 # information_encoding
-信源编码
+python 实现*信源编码*:
+```
+(1). Huffman 编码
+(2). Shannon 编码
+(3). Fano 编码
+```
 # 0.环境
 ```
 python>=3.6
