@@ -109,7 +109,6 @@ class ShannonEncoder(object):
 if __name__ == '__main__':
     encoder = ShannonEncoder(filename='../data/GameOfThrones.txt')
     print(encoder.code_word)
-
     print(f'信源熵:{encoder.source_entropy:.2f}')
     print(f'平均码长:{encoder.mean_length:.2f}')
     print(f'编码效率:{encoder.encode_efficiency*100:.2f}%')
