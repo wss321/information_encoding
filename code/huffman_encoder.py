@@ -81,6 +81,8 @@ class HuffmanEncoder(object):
             return sorted_list
 
         result = self.__count_sym_frequency()
+        zero_freq_item = result[result['frequency'] == 0].index.tolist()
+        result.drop(zero_freq_item, inplace=True)
         keys = []
         values = []
         code_word = {}
