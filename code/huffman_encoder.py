@@ -9,12 +9,9 @@ class HuffmanEncoder(object):
     def __init__(self, filename='../data/GameOfThrones.txt'):
         self.filename = filename
         self.content = self.__load()
-        self.num_and_freq = self.__count_sym_frequency()
-        self.frequency = self.num_and_freq[['frequency']]
-        self.number = self.num_and_freq[['number']]
-        self.symbols = self.num_and_freq.index.tolist()
-        self.reduce_pro = self.__reduce()
-        self.code_word = self.__code_word()
+        self.reduce_source = self.__reduce()
+        self.encode_table = self.__encode()
+        self.code_word = self.encode_table['code_word'].to_frame()
         self.source_entropy = self.__entropy()
         self.mean_length = self.__mean_code_length()
         self.encode_efficiency = self.__encode_rate()
@@ -56,22 +53,22 @@ class HuffmanEncoder(object):
             S = end_2.index.tolist()
             end_2 = end_2.copy()
             end_2.loc[''.join(S)] = end_2.apply(lambda x: x.sum())
-            data_frame.drop(data_frame.index[[data_frame.index.tolist().index(i) for i in S]], inplace=True)
+            data_frame.drop(S, inplace=True)
             data_frame = pd.concat([data_frame, end_2.tail(1)])
             return data_frame, {S[0]: '1', S[1]: '0'}
 
-        df = self.num_and_freq.copy()
+        num_and_freq = self.__count_sym_frequency()
+        df = num_and_freq.copy()
         s = []
         while len(df.index) > 1:
             df, s_i = __reduce_info_src(df)
             s.append(s_i)
         d = dict()
         for i in s:
-            # print(i)
             d = {**d, **i}
         return d
 
-    def __code_word(self):
+    def __encode(self):
         """编码成码字"""
 
         def __find_and_sort(symbol, string_list):
@@ -83,39 +80,43 @@ class HuffmanEncoder(object):
             sorted_list.sort(key=lambda i: len(i), reverse=True)
             return sorted_list
 
+        result = self.__count_sym_frequency()
         keys = []
         values = []
-        codding = {}
-        for key, value in self.reduce_pro.items():
+        code_word = {}
+        for key, value in self.reduce_source.items():
             keys.append(key)
             values.append(value)
-        for index, sym in enumerate(self.symbols):
+        for index, sym in enumerate(result.index.tolist()):
             in_list = __find_and_sort(sym, keys)
             # print(f'{sym}:{sorted_list}')
             code = ''
             for i in in_list:
                 idx = keys.index(i)
                 code += values[idx]
-            codding[sym] = code
+            code_word[sym] = code
         keys = []
         values = []
-        for key, value in codding.items():
+        code_len = []
+        for key, value in code_word.items():
             keys.append(key)
             values.append(value)
-        codding = pd.DataFrame(values, index=keys, columns=['code_word'])
-        return codding
+            code_len.append(len(value))
+        result['code_len'] = code_len
+        result['code_word'] = values
+        return result
 
     def __mean_code_length(self):
         """计算平均码长"""
-        p = self.frequency.copy()
-        code = self.code_word.copy()
-        df = pd.concat([p, code], axis=1)
-        df['l_i'] = df.apply(lambda x: x['frequency'] * len(x['code_word']), axis=1)
+        p = self.encode_table.copy()['frequency']
+        code_len = self.encode_table.copy()['code_len']
+        df = pd.concat([p, code_len], axis=1)
+        df['l_i'] = df.apply(lambda x: x['frequency'] * x['code_len'], axis=1)
         return df['l_i'].sum()
 
     def __entropy(self):
         """计算信息熵"""
-        p = self.frequency.copy().values
+        p = self.encode_table.copy()['frequency'].values
         for idx in range(len(p)):
             if p[idx] != 0:
                 p[idx] = p[idx] * np.log2(p[idx])
