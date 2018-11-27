@@ -16,6 +16,8 @@ class FanoEncoder(object):
         self.source_entropy = self.__entropy()
         self.mean_length = self.__mean_code_length()
         self.encode_efficiency = self.__encode_rate()
+        self.var = self.__culculate_var()
+
 
     def __load(self):
         """加载文件"""
@@ -143,6 +145,11 @@ class FanoEncoder(object):
         """计算编码效率"""
         return self.source_entropy / self.mean_length
 
+    def __culculate_var(self):
+        df = self.encode_table.copy()[['frequency', 'code_len']]
+        df['var_i'] = df.apply(lambda x: x['frequency'] * (x['code_len'] - self.mean_length) ** 2, axis=1)
+        return df['var_i'].sum()
+
 
 if __name__ == '__main__':
     encoder = FanoEncoder(filename='../data/GameOfThrones.txt')
@@ -150,3 +157,4 @@ if __name__ == '__main__':
     print(f'信源熵:{encoder.source_entropy:.2f}')
     print(f'平均码长:{encoder.mean_length:.2f}')
     print(f'编码效率:{encoder.encode_efficiency*100:.2f}%')
+    print(f'码字长度方差:{encoder.var:.2f}')
