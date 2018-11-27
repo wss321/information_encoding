@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-import numpy as np
-import pandas as pd
+from pandas import DataFrame, concat
+from numpy import squeeze, zeros, int64, log2
 
 
 class HuffmanEncoder(object):
@@ -26,12 +26,12 @@ class HuffmanEncoder(object):
     def __count_sym_num(self):
         """计算每个符号数量"""
         sym = [chr(i) for i in range(ord('A'), ord('Z') + 1)] + [chr(i) for i in range(ord('a'), ord('z') + 1)] + [' ']
-        sym_num = np.zeros(len(sym), dtype=np.int64)
+        sym_num = zeros(len(sym), dtype=int64)
         for letter in self.content:
             if letter in sym:
                 sym_num[sym.index(letter)] += 1
 
-        df = pd.DataFrame(sym_num, index=sym)
+        df = DataFrame(sym_num, index=sym)
         df.columns = ['number']
         return df
 
@@ -41,7 +41,7 @@ class HuffmanEncoder(object):
         df = df.sort_values(by='number', ascending=False)
         number = df[['number']].values
         number = number / number.sum()
-        df['frequency'] = np.squeeze(number)
+        df['frequency'] = squeeze(number)
         return df
 
     def __reduce(self):
@@ -55,7 +55,7 @@ class HuffmanEncoder(object):
             end_2 = end_2.copy()
             end_2.loc[''.join(S)] = end_2.apply(lambda x: x.sum())
             data_frame.drop(S, inplace=True)
-            data_frame = pd.concat([data_frame, end_2.tail(1)])
+            data_frame = concat([data_frame, end_2.tail(1)])
             return data_frame, {S[0]: '1', S[1]: '0'}
 
         num_and_freq = self.__count_sym_frequency()
@@ -113,7 +113,7 @@ class HuffmanEncoder(object):
         """计算平均码长"""
         p = self.encode_table.copy()['frequency']
         code_len = self.encode_table.copy()['code_len']
-        df = pd.concat([p, code_len], axis=1)
+        df = concat([p, code_len], axis=1)
         df['l_i'] = df.apply(lambda x: x['frequency'] * x['code_len'], axis=1)
         return df['l_i'].sum()
 
@@ -122,7 +122,7 @@ class HuffmanEncoder(object):
         p = self.encode_table.copy()['frequency'].values
         for idx in range(len(p)):
             if p[idx] != 0:
-                p[idx] = p[idx] * np.log2(p[idx])
+                p[idx] = p[idx] * log2(p[idx])
         return - p.sum()
 
     def __encode_rate(self):
@@ -136,7 +136,7 @@ class HuffmanEncoder(object):
 
 
 if __name__ == '__main__':
-    encoder = HuffmanEncoder(filename='./GameOfThrones.txt')
+    encoder = HuffmanEncoder(filename='../data/GameOfThrones.txt')
     print(encoder.code_word)
     print(f'信源熵:{encoder.source_entropy:.2f}')
     print(f'平均码长:{encoder.mean_length:.2f}')

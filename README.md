@@ -14,10 +14,11 @@ pandas
 # 1. 数据
 data/GameOfThrones.txt<br/>
 # 2. 编码
+```
+运行 code/merge.py 
+选择相应的编码
+```
 ## (1). Huffman 编码
-```
-运行 code/huffman_encoder.py 
-```
 | 字符 | 码字 |
 |:---:|:---------:|
 | 空格 | 00 |
@@ -80,9 +81,6 @@ data/GameOfThrones.txt<br/>
 ```
 
 ## (2). Shannon 编码
-```
-运行 code/shannon_encoder.py
-```
 | 字符 | 码字 |
 |:---:|:---------:|
 | 空格 | 000 |
@@ -145,9 +143,6 @@ data/GameOfThrones.txt<br/>
 ```
 
 ## (3). Fano 编码
-```
-运行 code/fano_encoder.py
-```
 | 字符 | 码字 |
 |:---:|:---------:|
 | 空格 | 00 |

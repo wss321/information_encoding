@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-import numpy as np
-import pandas as pd
+from numpy import squeeze, zeros, int64, log2
+from pandas import DataFrame, concat
 from queue import Queue
 
 
@@ -18,7 +18,6 @@ class FanoEncoder(object):
         self.encode_efficiency = self.__encode_rate()
         self.var = self.__culculate_var()
 
-
     def __load(self):
         """加载文件"""
         with open(self.filename, 'r', encoding='gbk') as f:
@@ -28,12 +27,12 @@ class FanoEncoder(object):
     def __count_sym_num(self):
         """计算每个符号数量"""
         sym = [chr(i) for i in range(ord('A'), ord('Z') + 1)] + [chr(i) for i in range(ord('a'), ord('z') + 1)] + [' ']
-        sym_num = np.zeros(len(sym), dtype=np.int64)
+        sym_num = zeros(len(sym), dtype=int64)
         for letter in self.content:
             if letter in sym:
                 sym_num[sym.index(letter)] += 1
 
-        df = pd.DataFrame(sym_num, index=sym)
+        df = DataFrame(sym_num, index=sym)
         df.columns = ['number']
         return df
 
@@ -43,7 +42,7 @@ class FanoEncoder(object):
         df = df.sort_values(by='number', ascending=False)
         number = df[['number']].values
         number = number / number.sum()
-        df['frequency'] = np.squeeze(number)
+        df['frequency'] = squeeze(number)
         return df
 
     def __grouping(self):
@@ -129,7 +128,7 @@ class FanoEncoder(object):
         """计算平均码长"""
         p = self.encode_table.copy()['frequency']
         code_len = self.encode_table.copy()['code_len']
-        df = pd.concat([p, code_len], axis=1)
+        df = concat([p, code_len], axis=1)
         df['l_i'] = df.apply(lambda x: x['frequency'] * x['code_len'], axis=1)
         return df['l_i'].sum()
 
@@ -138,7 +137,7 @@ class FanoEncoder(object):
         p = self.encode_table.copy()['frequency'].values
         for idx in range(len(p)):
             if p[idx] != 0:
-                p[idx] = p[idx] * np.log2(p[idx])
+                p[idx] = p[idx] * log2(p[idx])
         return - p.sum()
 
     def __encode_rate(self):
